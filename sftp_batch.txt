@@ -1,0 +1,5 @@
+mkdir /home/container
+cd /home/container
+lcd D:\to update
+put -r * .
+bye

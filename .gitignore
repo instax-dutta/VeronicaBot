@@ -1,0 +1,58 @@
+# Notifoty logs
+logs/*.log
+!logs/.gitkeep
+
+# SQLite database
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/twitch_user_token.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Dashboard environment files
+dashboard/.env.local
+dashboard/.env.*.local
+!dashboard/.env.local.example
+
+# Node modules
+node_modules/
+dashboard/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+
+# Build output
+dist/
+build/
+
+# Next.js build
+dashboard/.next/
+
+# PM2
+.pm2/
+
+# System files
+*.pid
+*.seed
+*.pid.lock

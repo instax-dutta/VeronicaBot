@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manage Streamers List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "background-dark": "#050505",
+                        "surface-dark": "#0A0A0F",
+                        "neon-blue": "#00F0FF",
+                        "neon-purple": "#BC13FE",
+                        "neon-green": "#0AFF60",
+                        "neon-red": "#FF2A6D",
+                        "border-color": "#1F2937",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    boxShadow: {
+                        'neon-blue': '0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.1)',
+                        'neon-blue-hover': '0 0 15px rgba(0, 240, 255, 0.6), 0 0 30px rgba(0, 240, 255, 0.2)',
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, #1f2937 1px, transparent 1px), linear-gradient(to bottom, #1f2937 1px, transparent 1px)",
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            background-color: #050505;
+            color: #e5e7eb;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0F; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2937; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00F0FF; 
+        }
+        .widget-card {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .dock-container {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .dock-item {
+            transition: all 0.2s ease-out;
+        }
+        .dock-item:hover {
+            transform: translateY(-8px) scale(1.1);
+        }
+        .dock-item.active .icon-box {
+            background: rgba(0, 240, 255, 0.2);
+            color: #00F0FF;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+        }
+        .bg-grid-mask {
+            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+        }
+        .neon-toggle-checkbox:checked + .neon-toggle-label {
+            background-color: rgba(0, 240, 255, 0.2);
+            border-color: #00F0FF;
+        }
+        .neon-toggle-checkbox:checked + .neon-toggle-label .neon-toggle-circle {
+            transform: translateX(100%);
+            background-color: #00F0FF;
+            box-shadow: 0 0 10px #00F0FF;
+        }
+        .search-input:focus {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-sans h-screen flex flex-col overflow-hidden relative">
+<div class="absolute inset-0 z-0 opacity-[0.03] bg-[size:40px_40px] bg-grid-pattern pointer-events-none bg-grid-mask"></div>
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-neon-blue/5 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-neon-purple/5 rounded-full blur-[120px] pointer-events-none"></div>
+<main class="flex-1 overflow-y-auto z-10 p-6 pb-32">
+<header class="max-w-[1600px] mx-auto mb-8 flex items-center justify-between">
+<div>
+<h1 class="text-2xl font-bold text-white tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-blue">smart_toy</span>
+                    VERONICA <span class="text-gray-500 text-sm font-normal ml-2">v2.4.0</span>
+</h1>
+<p class="text-gray-400 text-sm mt-1">System Status: <span class="text-neon-green">Operational</span></p>
+</div>
+<div class="flex items-center gap-4">
+<div class="px-3 py-1 rounded-full border border-neon-blue/30 bg-neon-blue/5 text-neon-blue text-xs font-medium flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-neon-blue animate-pulse"></span>
+                    WebSocket Connected
+                </div>
+<div class="h-10 w-10 rounded-full bg-surface-dark border border-gray-700 flex items-center justify-center text-white overflow-hidden relative group cursor-pointer hover:border-neon-blue transition-colors">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</header>
+<div class="max-w-[1600px] mx-auto h-[calc(100vh-200px)] flex flex-col">
+<div class="widget-card rounded-2xl flex-1 flex flex-col shadow-neon-blue border-neon-blue/40">
+<div class="p-6 border-b border-white/10 bg-black/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div>
+<h2 class="text-xl font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-blue">group</span>
+                            Manage Streamers
+                        </h2>
+<p class="text-sm text-gray-400 mt-1">Configure tracked channels and notification settings</p>
+</div>
+<div class="flex items-center gap-4 w-full sm:w-auto">
+<div class="relative flex-1 sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">search</span>
+<input class="search-input w-full bg-surface-dark/80 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:border-neon-blue focus:outline-none transition-all" placeholder="Search streamers..." type="text"/>
+</div>
+<button class="flex items-center gap-2 bg-neon-blue/10 hover:bg-neon-blue/20 text-neon-blue border border-neon-blue/50 hover:border-neon-blue px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+<span class="material-symbols-outlined text-lg">add</span>
+                            Add New Streamer
+                        </button>
+</div>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-black/20 sticky top-0 backdrop-blur-md z-10 text-xs uppercase tracking-wider text-gray-400 font-medium">
+<tr>
+<th class="p-4 pl-6 border-b border-white/10">Streamer</th>
+<th class="p-4 border-b border-white/10">Platform</th>
+<th class="p-4 border-b border-white/10">Last Seen</th>
+<th class="p-4 border-b border-white/10">Status</th>
+<th class="p-4 pr-6 border-b border-white/10 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5 text-sm">
+<tr class="group hover:bg-white/5 transition-colors">
+<td class="p-4 pl-6">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold overflow-hidden border border-gray-700 group-hover:border-neon-blue transition-colors">
+<img alt="TheVinod" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-id6Wywo70GsgDGQtxrBCj0DuuaC_DB0HIWpaDCsGisDNehpfhL5CGJ2CzPJtOt-l-MKjOqXHptSzICY8FnU7CXNebf2xE-qBBHUbibhLIDHsvAfFuTlI1d-TB7j7_q6xoae9r10OTWPoIaZLUlqJ693YgKA9mvfGpOG6nT296Y2Png0XMQdjJ5YN7YmNDILrKr9zC32twHouiaDiUX-6zRHYxRVf62aYDcwZCy4CqFxY4CXuxn9E4qW_i7OSMI_ddBmrQh7jq2fF"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-background-dark rounded-full flex items-center justify-center">
+<div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
+</div>
+</div>
+<div>
+<div class="font-medium text-white group-hover:text-neon-blue transition-colors">TheVinod</div>
+<div class="text-xs text-gray-500">ID: 839201...</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-gray-300">
+<svg class="w-4 h-4 fill-[#9146FF]" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"></path></svg>
+                                        Twitch
+                                    </div>
+</td>
+<td class="p-4 text-gray-400">
+                                    Just now
+                                </td>
+<td class="p-4">
+<div class="flex items-center">
+<input checked="" class="neon-toggle-checkbox hidden" id="toggle-1" type="checkbox"/>
+<label class="neon-toggle-label relative w-10 h-5 bg-gray-700 border border-gray-600 rounded-full cursor-pointer transition-all duration-300" for="toggle-1">
+<div class="neon-toggle-circle absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-gray-400 rounded-full transition-all duration-300"></div>
+</label>
+<span class="ml-2 text-xs text-neon-blue font-medium">Active</span>
+</div>
+</td>
+<td class="p-4 pr-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-blue/20 text-gray-400 hover:text-neon-blue flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-red/20 text-gray-400 hover:text-neon-red flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-white/5 transition-colors">
+<td class="p-4 pl-6">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold overflow-hidden border border-gray-700 group-hover:border-neon-red transition-colors">
+<img alt="GamerPro" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZdR6i-XmupjlXIRODpiNy-MDatnia8ijiZX1YqS0FbX2xylsAgbGW8IQ1AVpEPoCQTILf3Wq9pc2l0m8u8cyxvfqbSkDO2UBGx0g5SPYoKWkwqyJ0doVuJwZmFLYCd6F3VPe49DJrx45FSa3kmg_FOQ0CU3RvHofUPbS74-NaeK6WlaPW6rhWdjr_mvY9c-YW_iBT0T5s9Lg27xF7vHq_iU5qchZ51n-28KuVo1d4augePlxA1QVp99FZGF3qgJt5t5owX6HvH_Jk"/>
+</div>
+</div>
+<div>
+<div class="font-medium text-white group-hover:text-neon-blue transition-colors">GamerPro</div>
+<div class="text-xs text-gray-500">ID: YT-9921...</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-gray-300">
+<svg class="w-4 h-4 fill-[#FF0000]" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path></svg>
+                                        YouTube
+                                    </div>
+</td>
+<td class="p-4 text-gray-400">
+                                    2 hours ago
+                                </td>
+<td class="p-4">
+<div class="flex items-center">
+<input checked="" class="neon-toggle-checkbox hidden" id="toggle-2" type="checkbox"/>
+<label class="neon-toggle-label relative w-10 h-5 bg-gray-700 border border-gray-600 rounded-full cursor-pointer transition-all duration-300" for="toggle-2">
+<div class="neon-toggle-circle absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-gray-400 rounded-full transition-all duration-300"></div>
+</label>
+<span class="ml-2 text-xs text-neon-blue font-medium">Active</span>
+</div>
+</td>
+<td class="p-4 pr-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-blue/20 text-gray-400 hover:text-neon-blue flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-red/20 text-gray-400 hover:text-neon-red flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-white/5 transition-colors">
+<td class="p-4 pl-6">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-indigo-800 flex items-center justify-center text-white font-bold overflow-hidden border border-gray-700 group-hover:border-neon-purple transition-colors">
+<img alt="CodeJam" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQaafKVYasvMU2XnfpFz2U3-vyOCC9sSyhR1g0RAmVqSQYDq2ZVrEbQdqmrDjdxfUsrY7LsAD9-lXK8oFu2Ss1_FhLcZDU3O1HRxEoM0x32zPG6MPQJPsHLwL7cmyFmVv3iLwGy-kYeA3MAu20Lu--0UNl8WB3aFJ2ngOYEAO3JxvI7OCOM78AjkoyGaLN_zBs0-p8IfOjvWAlzsG0oQhizN4LefntdEkUS_WStciDo_HKVnUZZhpNNCaEdEWuMdOwgzFUjNeCFYj_"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-background-dark rounded-full flex items-center justify-center">
+<div class="w-2.5 h-2.5 bg-gray-500 rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="font-medium text-white group-hover:text-neon-blue transition-colors">CodeJam</div>
+<div class="text-xs text-gray-500">ID: 112093...</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-gray-300">
+<svg class="w-4 h-4 fill-[#9146FF]" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"></path></svg>
+                                        Twitch
+                                    </div>
+</td>
+<td class="p-4 text-gray-400">
+                                    1 day ago
+                                </td>
+<td class="p-4">
+<div class="flex items-center">
+<input class="neon-toggle-checkbox hidden" id="toggle-3" type="checkbox"/>
+<label class="neon-toggle-label relative w-10 h-5 bg-gray-700 border border-gray-600 rounded-full cursor-pointer transition-all duration-300" for="toggle-3">
+<div class="neon-toggle-circle absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-gray-400 rounded-full transition-all duration-300"></div>
+</label>
+<span class="ml-2 text-xs text-gray-500 font-medium">Inactive</span>
+</div>
+</td>
+<td class="p-4 pr-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-blue/20 text-gray-400 hover:text-neon-blue flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-red/20 text-gray-400 hover:text-neon-red flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-white/5 transition-colors">
+<td class="p-4 pl-6">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-white font-bold overflow-hidden border border-gray-700 group-hover:border-neon-blue transition-colors">
+<img alt="PixelArt" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCFl5HiIhUPSOkdr2a3gdF4hzVsdZcOdWWn9CBua8ySYDG2kgy_EQz6goO_WbNIViRIsPJquZrsMUmNTcIeJ-LhdwIE1aXy5DScP_pJ2KMgWsVeHmx3xbrkebPJiapWIi4E9opv4RWcnqU-kYazn-PCtzk8UduXrC_2j3Gx9YAotB79FrT3AAR75zYVPAMvKHVKcN8uIH3OLV4xMqlmad7H5sONL8kgl66IfA8W71ncDL4MJk_DKuCIz_vPU-XEjpwBH7cFjPtDaN6"/>
+</div>
+</div>
+<div>
+<div class="font-medium text-white group-hover:text-neon-blue transition-colors">PixelArt</div>
+<div class="text-xs text-gray-500">ID: 445821...</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-gray-300">
+<svg class="w-4 h-4 fill-[#9146FF]" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"></path></svg>
+                                        Twitch
+                                    </div>
+</td>
+<td class="p-4 text-gray-400">
+                                    5 mins ago
+                                </td>
+<td class="p-4">
+<div class="flex items-center">
+<input checked="" class="neon-toggle-checkbox hidden" id="toggle-4" type="checkbox"/>
+<label class="neon-toggle-label relative w-10 h-5 bg-gray-700 border border-gray-600 rounded-full cursor-pointer transition-all duration-300" for="toggle-4">
+<div class="neon-toggle-circle absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-gray-400 rounded-full transition-all duration-300"></div>
+</label>
+<span class="ml-2 text-xs text-neon-blue font-medium">Active</span>
+</div>
+</td>
+<td class="p-4 pr-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-blue/20 text-gray-400 hover:text-neon-blue flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-red/20 text-gray-400 hover:text-neon-red flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-white/5 transition-colors">
+<td class="p-4 pl-6">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-orange-700 flex items-center justify-center text-white font-bold overflow-hidden border border-gray-700 group-hover:border-neon-red transition-colors">
+<img alt="RetroPlay" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0uvkASh-Z9jGrbnIfhN0rrasxX0cVOvh15HYN1xX4cQEWFh9EdTQ3Ugg7o2gutnTAUG5SmF1EeAyky2SVPth2xW763pHSUGeSRvIf8FgT0_N8aQOTyBTrDKmhNwN1gsit013Eph4-zCEjxLbOEC38tfxUbOQ54CVUrK9vuNAjvVYcaaexEKGtwevRuynZiRivGT1n4NIfCm_p4xB8TdYaCE0pWbogXzk0l0cOvvdsesCMMLIc2FDvnuIriEytmcXusHsfpMIllGJ4"/>
+</div>
+</div>
+<div>
+<div class="font-medium text-white group-hover:text-neon-blue transition-colors">RetroPlay</div>
+<div class="text-xs text-gray-500">ID: YT-7722...</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-gray-300">
+<svg class="w-4 h-4 fill-[#FF0000]" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path></svg>
+                                        YouTube
+                                    </div>
+</td>
+<td class="p-4 text-gray-400">
+                                    3 days ago
+                                </td>
+<td class="p-4">
+<div class="flex items-center">
+<input class="neon-toggle-checkbox hidden" id="toggle-5" type="checkbox"/>
+<label class="neon-toggle-label relative w-10 h-5 bg-gray-700 border border-gray-600 rounded-full cursor-pointer transition-all duration-300" for="toggle-5">
+<div class="neon-toggle-circle absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-gray-400 rounded-full transition-all duration-300"></div>
+</label>
+<span class="ml-2 text-xs text-gray-500 font-medium">Inactive</span>
+</div>
+</td>
+<td class="p-4 pr-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-blue/20 text-gray-400 hover:text-neon-blue flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-neon-red/20 text-gray-400 hover:text-neon-red flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-white/10 bg-black/40 flex justify-between items-center text-sm text-gray-400">
+<div>Showing 1-5 of 24 streamers</div>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded bg-neon-blue/20 text-neon-blue border border-neon-blue/50 flex items-center justify-center font-bold">1</button>
+<button class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center">2</button>
+<button class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center">3</button>
+<button class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+<div class="dock-container rounded-2xl px-6 py-3 flex items-center gap-4">
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Overview</span>
+</a>
+<a class="dock-item active group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">group</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Creators</span>
+</a>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">alt_route</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Routing</span>
+</a>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">description</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Logs</span>
+</a>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Settings</span>
+</a>
+</div>
+</div>
+
+</body></html>

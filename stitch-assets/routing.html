@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Config Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "background-dark": "#050505",
+                        "surface-dark": "#0A0A0F",
+                        "neon-blue": "#00F0FF",
+                        "neon-purple": "#BC13FE",
+                        "neon-green": "#0AFF60",
+                        "neon-red": "#FF2A6D",
+                        "border-color": "#1F2937",
+                        "discord": "#5865F2",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["Fira Code", "monospace"],
+                    },
+                    boxShadow: {
+                        'neon-blue': '0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.1)',
+                        'neon-blue-hover': '0 0 15px rgba(0, 240, 255, 0.6), 0 0 30px rgba(0, 240, 255, 0.2)',
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, #1f2937 1px, transparent 1px), linear-gradient(to bottom, #1f2937 1px, transparent 1px)",
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            background-color: #050505;
+            color: #e5e7eb;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0F; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2937; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00F0FF; 
+        }
+        .widget-card {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .widget-card:hover {
+            border-color: rgba(0, 240, 255, 0.8);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            transform: translateY(-2px);
+            z-index: 10;
+        }
+        .widget-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.05), transparent 60%);
+            pointer-events: none;
+        }
+        .dock-container {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .dock-item {
+            transition: all 0.2s ease-out;
+        }
+        .dock-item:hover {
+            transform: translateY(-8px) scale(1.1);
+        }
+        .dock-item.active .icon-box {
+            background: rgba(0, 240, 255, 0.2);
+            color: #00F0FF;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+        }
+        .bg-grid-mask {
+            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #00F0FF;
+            ring: 1px solid #00F0FF;
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }.neon-checkbox {
+            appearance: none;
+            background-color: rgba(0,0,0,0.3);
+            margin: 0;
+            font: inherit;
+            width: 1.15em;
+            height: 1.15em;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 0.15em;
+            display: grid;
+            place-content: center;
+            transition: all 0.2s;
+        }
+        .neon-checkbox::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #00F0FF;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .neon-checkbox:checked {
+            border-color: #00F0FF;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+        .neon-checkbox:checked::before {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-sans h-screen flex flex-col overflow-hidden relative">
+<div class="absolute inset-0 z-0 opacity-[0.03] bg-[size:40px_40px] bg-grid-pattern pointer-events-none bg-grid-mask"></div>
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-neon-blue/5 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-neon-purple/5 rounded-full blur-[120px] pointer-events-none"></div>
+<main class="flex-1 overflow-y-auto z-10 p-6 pb-32">
+<header class="max-w-[1600px] mx-auto mb-8 flex items-center justify-between">
+<div>
+<h1 class="text-2xl font-bold text-white tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-blue">smart_toy</span>
+                    VERONICA <span class="text-gray-500 text-sm font-normal ml-2">v2.4.0</span>
+</h1>
+<p class="text-gray-400 text-sm mt-1">Notification Configuration</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-4 py-2 rounded-lg bg-neon-blue/10 border border-neon-blue/30 text-neon-blue hover:bg-neon-blue/20 hover:border-neon-blue transition-all text-sm font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">save</span>
+                    Save Changes
+                </button>
+<div class="h-10 w-10 rounded-full bg-surface-dark border border-gray-700 flex items-center justify-center text-white overflow-hidden relative group cursor-pointer hover:border-neon-blue transition-colors">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</header>
+<div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-[minmax(180px,auto)]">
+<div class="widget-card rounded-2xl col-span-1 lg:col-span-2 flex flex-col">
+<div class="p-5 border-b border-white/5 flex justify-between items-center bg-black/20">
+<h2 class="text-lg font-semibold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-discord">chat_bubble</span>
+                        Message Template
+                    </h2>
+<div class="flex gap-2">
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/10 cursor-help" title="Copy to clipboard">{streamer}</span>
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/10 cursor-help" title="Copy to clipboard">{link}</span>
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/10 cursor-help" title="Copy to clipboard">{title}</span>
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/10 cursor-help" title="Copy to clipboard">{game}</span>
+</div>
+</div>
+<div class="p-6 flex-1 flex flex-col gap-6">
+<div class="space-y-2">
+<label class="text-sm text-gray-400 block font-medium">Notification Message</label>
+<div class="relative">
+<textarea class="w-full h-32 bg-black/40 border-gray-700 rounded-xl p-4 text-gray-200 font-mono text-sm focus:ring-1 focus:ring-neon-blue resize-none" placeholder="Hey @everyone! {streamer} is now live playing {game}! Check it out here: {link}">Hey @here! 🔴 **{streamer}** just went live!
+They are playing **{game}**: "{title}"
+Watch here: {link}</textarea>
+<div class="absolute bottom-3 right-3 text-xs text-gray-500">142/2000</div>
+</div>
+<p class="text-xs text-gray-500">Supported variables will be replaced automatically when the notification is sent.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-sm text-gray-400 block font-medium">Embed Color</label>
+<div class="flex items-center gap-3">
+<input class="h-10 w-14 rounded bg-transparent border border-gray-700 cursor-pointer" type="color" value="#00F0FF"/>
+<input class="flex-1 h-10 bg-black/40 border-gray-700 rounded-lg px-3 text-gray-200 text-sm font-mono" type="text" value="#00F0FF"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm text-gray-400 block font-medium">Thumbnail Display</label>
+<select class="w-full h-10 bg-black/40 border-gray-700 rounded-lg px-3 text-gray-200 text-sm">
+<option>Stream Preview (Large)</option>
+<option>Stream Preview (Small)</option>
+<option>Channel Avatar</option>
+<option>Game Art</option>
+<option>None</option>
+</select>
+</div>
+</div>
+<div class="mt-2 bg-[#313338] rounded-md p-4 border-l-4 border-neon-blue relative overflow-hidden">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-full bg-gray-600 flex-shrink-0">
+<img alt="Bot Avatar" class="w-full h-full rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDcTxrlW-m_SYuHAnn_OzXyHg9poZyuh3gObtvMAoqwuT3Y-RqbuE13H6oQj7VSG-zwFSiVXfSpDvBnyazP1LkuAVKtdy3g1fATIbl-QE5qX4W6Th__6zdpNNjknJyXrPUqDxf0yrsOjLrqHLrETFHWRvMSm_bs97e8uagyaYJcuwRT9gaiOACLLDU6jBKYWfL5IEAvxOcEWhQkVvNyGuKbL5jyfstvaO46zCSpkVK0prcYr8e1Lk6uFFwtKSQ2zPenw-SmI8dJhrk"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-medium text-white">Veronica</span>
+<span class="bg-[#5865F2] text-[10px] text-white px-1 rounded-[3px] h-[15px] flex items-center">BOT</span>
+<span class="text-xs text-gray-400">Today at 10:42 AM</span>
+</div>
+<div class="text-gray-100 mt-1 whitespace-pre-wrap text-sm">Hey <span class="bg-[#3e4047] text-[#c9cdfb] px-1 rounded hover:text-white cursor-pointer">@here</span>! 🔴 **TheVinod** just went live!
+They are playing **Elden Ring**: "No Hit Run Attempt #452"
+Watch here: <a class="text-[#00A8FC] hover:underline" href="#">https://twitch.tv/thevinod</a></div>
+<div class="mt-2 rounded-lg overflow-hidden max-w-[400px] border border-[#1e1f22]">
+<img alt="Stream Preview" class="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHsvK72CpG7k02M0shZRW3gJdCtw9BJnUrSYlydbwXhb4DZI-ryXQLeJGXGwOKFkIMSzpMVNhTk6eNy-juH0KyHcbs1PmjDd7iOusE3pQLzTwiarLyL2Kss09Cen2sEwu90zwtorR2xiB9vvObaI2ZN8f9tVgOAr5jAs7iSKoHBSESPN4NenHGLGOLYYppkrdHU0_aGd7_xHLPwnQZSuZSY0o8EEA2OOG4Qabeb6SVB9ZpcNEbVxnxsX6_umQtXM8-AqApharZk9gb"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="widget-card rounded-2xl col-span-1 p-5 flex flex-col">
+<div class="flex justify-between items-start mb-6">
+<h3 class="text-lg font-semibold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-purple">settings</span>
+                        Global Settings
+                    </h3>
+</div>
+<div class="space-y-6 flex-1">
+<div>
+<label class="text-sm text-gray-400 block font-medium mb-2">Notification Cooldown</label>
+<div class="flex items-center gap-2">
+<input class="w-full h-10 bg-black/40 border-gray-700 rounded-lg px-3 text-gray-200 text-sm focus:border-neon-purple focus:ring-neon-purple" min="0" type="number" value="60"/>
+<span class="text-gray-500 text-sm">minutes</span>
+</div>
+<p class="text-[10px] text-gray-500 mt-1">Prevents spam if stream restarts quickly.</p>
+</div>
+<div>
+<label class="text-sm text-gray-400 block font-medium mb-2">Default Mention</label>
+<div class="grid grid-cols-2 gap-3">
+<label class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-transparent cursor-pointer hover:border-neon-purple/50 transition-all">
+<input class="neon-checkbox text-neon-purple focus:ring-neon-purple" name="mention" type="radio"/>
+<span class="text-sm text-gray-300">None</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-transparent cursor-pointer hover:border-neon-purple/50 transition-all">
+<input checked="" class="neon-checkbox text-neon-purple focus:ring-neon-purple" name="mention" type="radio"/>
+<span class="text-sm text-gray-300">@here</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-transparent cursor-pointer hover:border-neon-purple/50 transition-all">
+<input class="neon-checkbox text-neon-purple focus:ring-neon-purple" name="mention" type="radio"/>
+<span class="text-sm text-gray-300">@everyone</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-transparent cursor-pointer hover:border-neon-purple/50 transition-all">
+<input class="neon-checkbox text-neon-purple focus:ring-neon-purple" name="mention" type="radio"/>
+<span class="text-sm text-gray-300">Role ID</span>
+</label>
+</div>
+</div>
+<div class="pt-4 border-t border-white/10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm text-gray-300">Auto-delete after offline</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-neon-purple rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-300">Update existing message</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-neon-purple rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="widget-card rounded-2xl col-span-1 lg:col-span-3 p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-semibold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-green">alt_route</span>
+                        Channel Mapping
+                    </h3>
+<button class="px-3 py-1.5 rounded-lg bg-neon-green/10 border border-neon-green/30 text-neon-green hover:bg-neon-green/20 hover:border-neon-green transition-all text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span>
+                        New Route
+                    </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-2">
+<thead>
+<tr class="text-gray-500 text-xs uppercase tracking-wider">
+<th class="pb-2 pl-2">Streamer Source</th>
+<th class="pb-2">Platform</th>
+<th class="pb-2 text-center">
+<span class="material-symbols-outlined text-base align-middle">arrow_forward</span>
+</th>
+<th class="pb-2">Target Discord Channel</th>
+<th class="pb-2">Custom Role</th>
+<th class="pb-2 text-right pr-2">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<tr class="group relative">
+<td class="bg-white/5 rounded-l-xl p-3 border-y border-l border-transparent group-hover:border-neon-blue/30 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-xs">TV</div>
+<span class="font-medium text-white">TheVinod</span>
+</div>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="inline-flex items-center gap-1 text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded text-xs">
+<span class="material-symbols-outlined text-sm">videocam</span> Twitch
+                                </span>
+</td>
+<td class="bg-white/5 p-3 text-center border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="material-symbols-outlined text-gray-600 group-hover:text-neon-blue transition-colors">arrow_right_alt</span>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<div class="flex items-center gap-2 text-gray-300">
+<span class="material-symbols-outlined text-gray-500 text-lg">tag</span>
+                                    general
+                                </div>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="text-gray-500 italic">Default (@here)</span>
+</td>
+<td class="bg-white/5 rounded-r-xl p-3 text-right border-y border-r border-transparent group-hover:border-neon-blue/30 transition-all pr-4">
+<button class="text-gray-500 hover:text-neon-blue transition-colors mx-1"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-gray-500 hover:text-neon-red transition-colors mx-1"><span class="material-symbols-outlined text-lg">delete</span></button>
+</td>
+</tr>
+<tr class="group relative">
+<td class="bg-white/5 rounded-l-xl p-3 border-y border-l border-transparent group-hover:border-neon-blue/30 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xs">GP</div>
+<span class="font-medium text-white">GamerPro</span>
+</div>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="inline-flex items-center gap-1 text-red-400 bg-red-400/10 px-2 py-0.5 rounded text-xs">
+<span class="material-symbols-outlined text-sm">play_circle</span> YouTube
+                                </span>
+</td>
+<td class="bg-white/5 p-3 text-center border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="material-symbols-outlined text-gray-600 group-hover:text-neon-blue transition-colors">arrow_right_alt</span>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<div class="flex items-center gap-2 text-gray-300">
+<span class="material-symbols-outlined text-gray-500 text-lg">tag</span>
+                                    announcements
+                                </div>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded text-xs border border-yellow-500/20">@Subscribers</span>
+</td>
+<td class="bg-white/5 rounded-r-xl p-3 text-right border-y border-r border-transparent group-hover:border-neon-blue/30 transition-all pr-4">
+<button class="text-gray-500 hover:text-neon-blue transition-colors mx-1"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-gray-500 hover:text-neon-red transition-colors mx-1"><span class="material-symbols-outlined text-lg">delete</span></button>
+</td>
+</tr>
+<tr class="group relative">
+<td class="bg-white/5 rounded-l-xl p-3 border-y border-l border-transparent group-hover:border-neon-blue/30 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">Dev</div>
+<span class="font-medium text-white">DevTeam</span>
+</div>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="inline-flex items-center gap-1 text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded text-xs">
+<span class="material-symbols-outlined text-sm">videocam</span> Twitch
+                                </span>
+</td>
+<td class="bg-white/5 p-3 text-center border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="material-symbols-outlined text-gray-600 group-hover:text-neon-blue transition-colors">arrow_right_alt</span>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<div class="flex items-center gap-2 text-gray-300">
+<span class="material-symbols-outlined text-gray-500 text-lg">tag</span>
+                                    dev-updates
+                                </div>
+</td>
+<td class="bg-white/5 p-3 border-y border-transparent group-hover:border-neon-blue/30 transition-all">
+<span class="text-gray-500 italic">None</span>
+</td>
+<td class="bg-white/5 rounded-r-xl p-3 text-right border-y border-r border-transparent group-hover:border-neon-blue/30 transition-all pr-4">
+<button class="text-gray-500 hover:text-neon-blue transition-colors mx-1"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-gray-500 hover:text-neon-red transition-colors mx-1"><span class="material-symbols-outlined text-lg">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+<div class="dock-container rounded-2xl px-6 py-3 flex items-center gap-4">
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Overview</span>
+</a>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">group</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Creators</span>
+</a>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">alt_route</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Routing</span>
+</a>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">description</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Logs</span>
+</a>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<a class="dock-item group active flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Settings</span>
+</a>
+</div>
+</div>
+
+</body></html>

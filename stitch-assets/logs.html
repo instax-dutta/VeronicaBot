@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detailed System Logs View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "background-dark": "#050505",
+                        "surface-dark": "#0A0A0F",
+                        "terminal-bg": "#0D0D12",
+                        "neon-blue": "#00F0FF",
+                        "neon-purple": "#BC13FE",
+                        "neon-green": "#0AFF60",
+                        "neon-red": "#FF2A6D",
+                        "neon-yellow": "#FFE600",
+                        "border-color": "#1F2937",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"],
+                    },
+                    boxShadow: {
+                        'neon-blue': '0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.1)',
+                        'neon-blue-hover': '0 0 15px rgba(0, 240, 255, 0.6), 0 0 30px rgba(0, 240, 255, 0.2)',
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, #1f2937 1px, transparent 1px), linear-gradient(to bottom, #1f2937 1px, transparent 1px)",
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            background-color: #050505;
+            color: #e5e7eb;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0F; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2937; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00F0FF; 
+        }
+        .widget-card {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .dock-container {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .dock-item {
+            transition: all 0.2s ease-out;
+        }
+        .dock-item:hover {
+            transform: translateY(-8px) scale(1.1);
+        }
+        .dock-item.active .icon-box {
+            background: rgba(0, 240, 255, 0.2);
+            color: #00F0FF;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+        }
+        .bg-grid-mask {
+            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+        }
+        .terminal-window {
+            background-color: rgba(13, 13, 18, 0.95);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+        .log-entry {
+            transition: background-color 0.15s ease;
+        }
+        .log-entry:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        .glow-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .glow-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .glow-btn:hover::after {
+            left: 100%;
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-sans h-screen flex flex-col overflow-hidden relative">
+<div class="absolute inset-0 z-0 opacity-[0.03] bg-[size:40px_40px] bg-grid-pattern pointer-events-none bg-grid-mask"></div>
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-neon-blue/5 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-neon-purple/5 rounded-full blur-[120px] pointer-events-none"></div>
+<main class="flex-1 overflow-hidden z-10 p-6 pb-28 flex flex-col">
+<header class="max-w-[1600px] mx-auto w-full mb-6 flex items-center justify-between shrink-0">
+<div>
+<h1 class="text-2xl font-bold text-white tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-blue">smart_toy</span>
+                    VERONICA <span class="text-gray-500 text-sm font-normal ml-2">v2.4.0</span>
+</h1>
+<p class="text-gray-400 text-sm mt-1">System Status: <span class="text-neon-green">Operational</span></p>
+</div>
+<div class="flex items-center gap-4">
+<div class="px-3 py-1 rounded-full border border-neon-blue/30 bg-neon-blue/5 text-neon-blue text-xs font-medium flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-neon-blue animate-pulse"></span>
+                    WebSocket Connected
+                </div>
+<div class="h-10 w-10 rounded-full bg-surface-dark border border-gray-700 flex items-center justify-center text-white overflow-hidden relative group cursor-pointer hover:border-neon-blue transition-colors">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</header>
+<div class="max-w-[1600px] mx-auto w-full flex-1 flex flex-col min-h-0">
+<div class="flex items-center justify-between mb-4 shrink-0">
+<div class="flex items-center gap-2">
+<h2 class="text-xl font-bold text-white mr-4 tracking-tight">System Logs</h2>
+<div class="flex items-center gap-2 bg-surface-dark/50 p-1 rounded-lg border border-white/5">
+<button class="px-3 py-1.5 rounded-md bg-neon-blue/10 text-neon-blue text-xs font-medium border border-neon-blue/20 shadow-[0_0_10px_rgba(0,240,255,0.1)] transition-all hover:bg-neon-blue/20">
+                            All Logs
+                        </button>
+<button class="px-3 py-1.5 rounded-md text-gray-400 text-xs font-medium border border-transparent hover:text-neon-red hover:bg-neon-red/5 transition-all">
+                            Errors <span class="ml-1 bg-neon-red/20 text-neon-red px-1 rounded text-[10px]">3</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-gray-400 text-xs font-medium border border-transparent hover:text-neon-yellow hover:bg-neon-yellow/5 transition-all">
+                            Warnings
+                        </button>
+<button class="px-3 py-1.5 rounded-md text-gray-400 text-xs font-medium border border-transparent hover:text-neon-purple hover:bg-neon-purple/5 transition-all">
+                            Notifications
+                        </button>
+<button class="px-3 py-1.5 rounded-md text-gray-400 text-xs font-medium border border-transparent hover:text-white hover:bg-white/5 transition-all">
+                            System
+                        </button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 material-symbols-outlined text-sm">search</span>
+<input class="bg-surface-dark border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/50 w-64 placeholder-gray-600 transition-all font-mono" placeholder="Search logs..." type="text"/>
+</div>
+<button class="glow-btn flex items-center gap-2 px-4 py-1.5 rounded-lg bg-neon-blue/10 border border-neon-blue/40 text-neon-blue text-sm font-medium hover:bg-neon-blue/20 hover:shadow-neon-blue transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Download Logs
+                    </button>
+</div>
+</div>
+<div class="terminal-window rounded-xl flex flex-col flex-1 overflow-hidden relative">
+<div class="bg-black/40 border-b border-white/5 px-4 py-2 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-2">
+<div class="flex gap-1.5">
+<div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+</div>
+<span class="ml-3 text-xs text-gray-500 font-mono">veronica_bot.log — tail -f</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-[10px] text-gray-500 font-mono uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse"></span>
+                            Live Tail
+                        </div>
+<div class="h-4 w-px bg-white/10"></div>
+<span class="text-xs text-gray-500 font-mono">1524 lines</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-4 font-mono text-sm leading-relaxed" id="log-container">
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:42:01</span>
+<span class="text-neon-blue font-bold min-w-[80px]">INFO</span>
+<span class="text-gray-300">Started background job <span class="text-neon-purple">StreamScanner</span> for user <span class="text-white">TheVinod</span></span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:42:03</span>
+<span class="text-neon-blue font-bold min-w-[80px]">INFO</span>
+<span class="text-gray-300">Twitch API: Fetched status for channel <span class="text-neon-yellow">'thevinod'</span> (Latency: 45ms)</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:42:05</span>
+<span class="text-neon-green font-bold min-w-[80px]">SUCCESS</span>
+<span class="text-gray-300">Stream detected as LIVE. Preparing notification payload.</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded bg-neon-blue/5 border-l-2 border-neon-blue pl-3">
+<span class="text-gray-500 min-w-[138px] select-none">2023-10-24 10:42:06</span>
+<span class="text-neon-blue font-bold min-w-[80px]">PAYLOAD</span>
+<span class="text-gray-400 truncate w-full">{ "type": "stream_up", "user_id": "837492", "game": "VS Code", "title": "Late Night Coding Session" }</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:42:07</span>
+<span class="text-neon-blue font-bold min-w-[80px]">INFO</span>
+<span class="text-gray-300">Dispatching message to Discord Channel <span class="text-neon-purple">#general</span> (ID: 983274928374)</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:42:08</span>
+<span class="text-neon-green font-bold min-w-[80px]">SUCCESS</span>
+<span class="text-gray-300">Notification successfully sent. Message ID: 1129384756</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded bg-neon-red/5 border-l-2 border-neon-red pl-3 my-1">
+<span class="text-gray-500 min-w-[138px] select-none">2023-10-24 10:45:12</span>
+<span class="text-neon-red font-bold min-w-[80px]">ERROR</span>
+<span class="text-red-300">Failed to fetch YouTube RSS feed for <span class="text-white">GamerPro</span>. Connection timed out.</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:45:13</span>
+<span class="text-neon-yellow font-bold min-w-[80px]">WARN</span>
+<span class="text-yellow-100/70">Retrying YouTube fetch (Attempt 1/3) in 5000ms...</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:45:18</span>
+<span class="text-neon-blue font-bold min-w-[80px]">INFO</span>
+<span class="text-gray-300">Retrying YouTube fetch for <span class="text-white">GamerPro</span>...</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:45:19</span>
+<span class="text-neon-green font-bold min-w-[80px]">SUCCESS</span>
+<span class="text-gray-300">Connection established. Feed parsed successfully. 0 new videos found.</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:50:00</span>
+<span class="text-neon-blue font-bold min-w-[80px]">SYSTEM</span>
+<span class="text-gray-300">Running hourly database maintenance task: <span class="text-neon-blue">Vacuum</span></span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:50:02</span>
+<span class="text-neon-blue font-bold min-w-[80px]">INFO</span>
+<span class="text-gray-300">Cleaned up 42 expired temporary records.</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:55:00</span>
+<span class="text-neon-purple font-bold min-w-[80px]">DEBUG</span>
+<span class="text-gray-500">WebSocket Ping received from shard #0</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 10:55:00</span>
+<span class="text-neon-purple font-bold min-w-[80px]">DEBUG</span>
+<span class="text-gray-500">WebSocket Pong sent to shard #0 (Latency: 2ms)</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 11:00:00</span>
+<span class="text-neon-blue font-bold min-w-[80px]">INFO</span>
+<span class="text-gray-300">Daily Digest generation skipped (No subscribers for digest).</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded bg-neon-red/5 border-l-2 border-neon-red pl-3 my-1">
+<span class="text-gray-500 min-w-[138px] select-none">2023-10-24 11:02:45</span>
+<span class="text-neon-red font-bold min-w-[80px]">CRITICAL</span>
+<span class="text-red-300">Redis Connection Lost! Reconnecting...</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 11:02:46</span>
+<span class="text-neon-yellow font-bold min-w-[80px]">WARN</span>
+<span class="text-yellow-100/70">Cache unavailable. Fallback to direct DB queries enabled. Performance may degrade.</span>
+</div>
+<div class="log-entry flex gap-4 p-1 rounded">
+<span class="text-gray-500 min-w-[140px] select-none">2023-10-24 11:02:48</span>
+<span class="text-neon-green font-bold min-w-[80px]">SUCCESS</span>
+<span class="text-gray-300">Redis Connection Restored.</span>
+</div>
+<div class="mt-2 animate-pulse w-3 h-5 bg-neon-blue/50"></div>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+<div class="dock-container rounded-2xl px-6 py-3 flex items-center gap-4">
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Overview</span>
+</a>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">group</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Creators</span>
+</a>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">alt_route</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Routing</span>
+</a>
+<a class="dock-item group active flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">description</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Logs</span>
+</a>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<a class="dock-item group flex flex-col items-center gap-1" href="#">
+<div class="icon-box w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all border border-transparent group-hover:border-gray-500">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</div>
+<span class="text-[10px] font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-black/80 px-2 py-0.5 rounded border border-gray-700">Settings</span>
+</a>
+</div>
+</div>
+<script>
+        // Simple auto-scroll for effect
+        const logContainer = document.getElementById('log-container');
+        if(logContainer) {
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+    </script>
+
+</body></html>
