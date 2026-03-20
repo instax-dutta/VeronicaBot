@@ -29,7 +29,7 @@ function generateSystemLogs(creators: Creator[], health: HealthStatus | null, st
     });
 
     if (health?.services.database.healthy) {
-        logs.push({ time: fmt(offset), level: 'SYSTEM', message: `Database connection verified (NeonDB). Latency: ${health.services.database.latency ?? '?'}ms` });
+        logs.push({ time: fmt(offset), level: 'SYSTEM', message: `Database connection verified (SQLite). Latency: ${health.services.database.latency ?? '?'}ms` });
         offset += 3;
     }
     if (health?.services.redis.healthy) {

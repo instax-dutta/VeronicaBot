@@ -6,6 +6,7 @@ A production-grade Discord bot for monitoring YouTube and Twitch channels for li
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Discord.js](https://img.shields.io/badge/Discord.js-14-orange.svg)
+![Privacy](https://img.shields.io/badge/Privacy-Local_SQLite-red.svg)
 
 ---
 
@@ -36,7 +37,15 @@ VeronicaBot is a powerful Discord notification bot that keeps your community inf
 - Sends rich, customizable Discord embed notifications
 - Supports role mentions (@role) for stream alerts
 - Provides a web dashboard for easy management
-- Includes a REST API for programmatic access
+ - Includes a REST API for programmatic access
+
+### Privacy-First Design
+
+VeronicaBot is designed with privacy at its core:
+- **Local SQLite Database**: All data is stored locally in a SQLite database. No external database services required.
+- **No Cloud Dependencies**: Your data never leaves your server.
+- **You Control Everything**: Full ownership of your data and infrastructure.
+- **Lightweight**: Minimal resource usage with efficient local storage.
 
 ---
 
@@ -72,13 +81,29 @@ VeronicaBot is a powerful Discord notification bot that keeps your community inf
 
 ---
 
+## Why VeronicaBot?
+
+VeronicaBot stands out from other notification bots with its privacy-first approach:
+
+| Benefit | Description |
+|--------|-------------|
+| **Local Data Storage** | Your data stays on your server with SQLite - no third-party databases |
+| **No Vendor Lock-in** | Full control over your infrastructure and data |
+| **Minimal Footprint** | Lightweight and efficient - runs on modest hardware |
+| **Transparent** | Open source code you can audit |
+| **Self-Hosted** | Deploy anywhere - your server, your rules |
+
+Unlike cloud-based alternatives that require external database services or cloud storage, VeronicaBot keeps everything local. Your Discord server data, monitored channels, and notification settings remain under your control.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
 | **Runtime** | Node.js 18+ | JavaScript runtime |
 | **Bot Framework** | Discord.js 14 | Discord bot API |
-| **Database** | SQLite (better-sqlite3) | Local data storage |
+| **Database** | SQLite (better-sqlite3) | Privacy-first local storage |
 | **Cache** | Upstash Redis | Rate limiting & caching |
 | **Dashboard** | Next.js 14 | Web UI (optional) |
 | **API Server** | Express.js | REST API |

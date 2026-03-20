@@ -6,8 +6,8 @@
  * 1. Check Redis cooldown - if present, SKIP API call
  * 2. Check Redis live cache - if present and true, reduce check frequency
  * 3. Call platform API
- * 4. If LIVE: Compare stream_id with NeonDB, send notification if new
- * 5. If OFFLINE: Update NeonDB and clear Redis cache
+ * 4. If LIVE: Compare stream_id with database, send notification if new
+ * 5. If OFFLINE: Update database and clear Redis cache
  */
 
 import config from '../config/index.js';
@@ -193,7 +193,7 @@ export async function processCreatorResult(result, platform) {
         if (isNowLive && result.streamData) {
             const streamId = result.streamData.streamId || result.streamData.videoId;
 
-            // Update state in NeonDB
+            // Update state in database
             await streamState.update(result.id, {
                 isLive: true,
                 streamId: streamId,
@@ -245,7 +245,7 @@ export async function processCreatorResult(result, platform) {
         else if (wasLive && !isNowLive) {
             logger.info(`⚫ ${result.display_name} ended their ${platform} stream`);
 
-            // Update NeonDB
+            // Update database
             await streamState.setOffline(result.id);
 
             // Clear Redis cache

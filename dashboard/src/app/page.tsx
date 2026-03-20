@@ -34,7 +34,7 @@ function generateLogs(creators: Creator[], health: HealthStatus | null): LogEntr
 
   // System logs
   const dbLatency = health?.services.database.healthy ? `${Math.floor(Math.random() * 30 + 10)}ms` : 'TIMEOUT';
-  logs.push({ time: fmt(offset), level: 'SYSTEM', message: `Database connection verified (NeonDB). Latency: ${dbLatency}` });
+  logs.push({ time: fmt(offset), level: 'SYSTEM', message: `Database connection verified (SQLite). Latency: ${dbLatency}` });
   offset += 3;
   logs.push({ time: fmt(offset), level: 'CRON', message: "Scheduled task 'update_cache' executed successfully." });
 

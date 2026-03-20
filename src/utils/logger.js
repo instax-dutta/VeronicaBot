@@ -70,7 +70,7 @@ export function createLogger(component) {
             console.log(`💾 Memory: ${formatMemory(process.memoryUsage().heapUsed)}`);
 
             // Database health
-            console.log(`🗄️  Database (NeonDB): ${stats.database?.healthy ? '✅ Connected' : `❌ ${stats.database?.error || 'Error'}`}`);
+            console.log(`🗄️  Database (SQLite): ${stats.database?.healthy ? '✅ Connected' : `❌ ${stats.database?.error || 'Error'}`}`);
 
             // Redis health
             console.log(`⚡ Cache (Redis): ${stats.redis?.healthy ? `✅ Connected (${stats.redis.latency}ms)` : `⚠️ ${stats.redis?.error || 'Not available'}`}`);

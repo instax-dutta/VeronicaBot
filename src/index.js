@@ -1,13 +1,13 @@
 /**
- * Notifoty - Production Discord Bot for YouTube & Twitch Live Notifications
+ * VeronicaBot - Production Discord Bot for YouTube & Twitch Live Notifications
  * 
- * Version 2.0.0 - NeonDB + Redis Architecture
+ * Version 2.0.0 - SQLite + Redis Architecture
  * 
  * Entry point for the application
  * Handles initialization, graceful shutdown, and error handling
  * 
  * Architecture:
- * - NeonDB (PostgreSQL): PRIMARY source of truth for all data
+ * - SQLite: PRIMARY source of truth for all data
  * - Upstash Redis: SECONDARY cache layer (ephemeral, replaceable)
  */
 
@@ -65,7 +65,7 @@ function printBanner() {
 ║   🔔 ${BOT_NAME.toUpperCase().padEnd(50)}  ║
 ║                                                           ║
 ║   YouTube & Twitch Live Notification Bot                  ║
-║   Version 2.0.0 (NeonDB + Redis)                         ║
+║   Version 2.0.0 (SQLite + Redis)                         ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 `);
@@ -178,8 +178,8 @@ async function main() {
     logger.info(`Starting ${BOT_NAME}...`);
 
     try {
-        // Step 1: Initialize NeonDB (PostgreSQL)
-        logger.info('Step 1/5: Connecting to NeonDB (PostgreSQL)...');
+        // Step 1: Initialize SQLite database
+        logger.info('Step 1/5: Connecting to SQLite database...');
         await initDatabase();
 
         // Step 2: Initialize Upstash Redis
@@ -223,7 +223,7 @@ async function main() {
         logger.info('Slash commands are ready. Press Ctrl+C to stop.');
         logger.info('');
         logger.info('📖 Architecture:');
-        logger.info('   Database: NeonDB (PostgreSQL) - PRIMARY source of truth');
+        logger.info('   Database: SQLite - PRIMARY source of truth');
         logger.info(`   Cache:    Upstash Redis - ${isRedisAvailable() ? '✅ Connected' : '⚠️ Not available (using DB only)'}`);
         logger.info(`   Dashboard API: Port ${config.api.port}`);
 

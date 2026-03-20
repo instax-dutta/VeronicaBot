@@ -76,7 +76,7 @@ export async function execute(interaction) {
                     inline: true,
                 },
                 {
-                    name: '🗄️ Database (NeonDB)',
+                    name: '🗄️ Database (SQLite)',
                     value: dbHealth.healthy ? '✅ Connected' : `❌ ${dbHealth.error}`,
                     inline: true,
                 },

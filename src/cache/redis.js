@@ -2,7 +2,7 @@
  * Redis Cache Layer (Upstash)
  * 
  * Redis is a SECONDARY cache layer. It is ephemeral and replaceable.
- * If Redis data is lost, the bot MUST still behave correctly using NeonDB alone.
+ * If Redis data is lost, the bot MUST still behave correctly using SQLite alone.
  * 
  * Redis is used ONLY for:
  * - Live state cache (reduce DB queries)
@@ -260,7 +260,7 @@ export async function checkHealth() {
 
 /**
  * Warm cache from database
- * Sets initial live status in Redis based on NeonDB state
+ * Sets initial live status in Redis based on SQLite state
  */
 export async function warmCache(creatorsWithState) {
     if (!isRedisAvailable()) return;

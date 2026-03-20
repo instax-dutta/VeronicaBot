@@ -116,7 +116,7 @@ export default function SettingsPage() {
                         <div className="stitch-setting-row">
                             <span className="stitch-setting-label">
                                 <span className={`stitch-inline-dot ${health?.services.database.healthy ? 'healthy' : 'unhealthy'}`} />
-                                Database (NeonDB)
+                                Database (SQLite)
                             </span>
                             <span className="stitch-setting-val" style={{ color: health?.services.database.healthy ? 'var(--neon-green)' : 'var(--neon-red)' }}>
                                 {health?.services.database.healthy ? `Connected (${health.services.database.latency ?? '?'}ms)` : 'Disconnected'}
