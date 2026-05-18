@@ -364,7 +364,7 @@ Guidelines:
 
 ## License
 
-[MIT](LICENSE) © 2024 [sdad.pro](https://sdad.pro)
+[MIT](LICENSE) © 2026 [sdad.pro](https://sdad.pro)
 
 ---
 
