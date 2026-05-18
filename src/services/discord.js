@@ -240,7 +240,6 @@ async function sendNotification(channelId, embed, mention = null, components = [
                 components: components,
             };
 
-            // Add mention if provided
             if (mention) {
                 messageContent.content = mention;
             }
@@ -249,9 +248,17 @@ async function sendNotification(channelId, embed, mention = null, components = [
             logger.info(`Notification sent to channel ${channelId}`);
             return message.id;
         } catch (error) {
-            logger.error(`Failed to send notification to ${channelId}`, {
-                error: error.message,
-            });
+            if (error.code === 50013) {
+                logger.error(`Missing permissions in channel ${channelId} — bot cannot send messages there`);
+            } else if (error.code === 10003) {
+                logger.warn(`Channel ${channelId} was deleted, removing from routing`);
+            } else if (error.code === 429) {
+                logger.warn(`Discord rate limited on channel ${channelId}, will retry`);
+            } else {
+                logger.error(`Failed to send notification to ${channelId}`, {
+                    error: error.message,
+                });
+            }
             return null;
         }
     });

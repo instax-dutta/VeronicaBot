@@ -40,7 +40,6 @@ export function requireAuth(req, res, next) {
         const decoded = jwt.verify(token, config.api.secret);
         req.user = decoded;
 
-        // Check if user is an admin (if BOT_ADMIN_IDS is configured)
         if (config.discord.adminIds.length > 0) {
             if (!config.discord.adminIds.includes(decoded.id)) {
                 logger.warn(`Unauthorized access attempt by ${decoded.username} (${decoded.id})`);
@@ -50,9 +49,12 @@ export function requireAuth(req, res, next) {
 
         next();
     } catch (error) {
-        if (error.name === 'TokenExpiredError') {
+        if (error instanceof jwt.TokenExpiredError) {
             return res.status(401).json({ error: 'Token expired' });
         }
-        return res.status(401).json({ error: 'Invalid token' });
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+        return res.status(500).json({ error: 'Authentication error' });
     }
 }

@@ -36,16 +36,16 @@ export async function execute(interaction) {
 
     const platform = interaction.options.getString('platform') || 'all';
 
-    const embed = new EmbedBuilder()
-        .setColor(0x5865F2)
-        .setTitle(`🔄 Manual Poll`)
-        .setDescription(`Polling ${platform === 'all' ? 'all platforms' : platform} for updates...`)
-        .setTimestamp()
-        .setFooter({ text: 'Veronica • Made for Avengers Streamers' });
-
-    await interaction.reply({ embeds: [embed] });
-
     try {
+        const embed = new EmbedBuilder()
+            .setColor(0x5865F2)
+            .setTitle(`🔄 Manual Poll`)
+            .setDescription(`Polling ${platform === 'all' ? 'all platforms' : platform} for updates...`)
+            .setTimestamp()
+            .setFooter({ text: 'Veronica • Made for Avengers Streamers' });
+
+        await interaction.reply({ embeds: [embed] });
+
         const startTime = Date.now();
         await forcePoll(platform);
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -71,7 +71,12 @@ export async function execute(interaction) {
             .setTimestamp()
             .setFooter({ text: 'Veronica • Made for Avengers Streamers' });
 
-        await interaction.editReply({ embeds: [errorEmbed] });
+        const reply = { embeds: [errorEmbed] };
+        if (interaction.replied || interaction.deferred) {
+            await interaction.editReply(reply);
+        } else {
+            await interaction.reply(reply);
+        }
     }
 }
 

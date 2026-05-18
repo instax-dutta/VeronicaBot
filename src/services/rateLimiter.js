@@ -101,13 +101,29 @@ export function updateTwitchLimits(headers) {
 
 /**
  * Pause a limiter for a specified duration (used for backoff)
+ * Uses a monotonic token system to prevent race conditions from overlapping pauses
  */
+const pauseTokens = new WeakMap();
+
 export function pauseLimiter(limiter, durationMs, reason = 'manual') {
     logger.warn(`Pausing rate limiter for ${durationMs}ms: ${reason}`);
+
+    const token = Symbol('pause');
+    if (!pauseTokens.has(limiter)) {
+        pauseTokens.set(limiter, { currentToken: null, scheduledResume: false });
+    }
+    const state = pauseTokens.get(limiter);
+    state.currentToken = token;
 
     limiter.updateSettings({ reservoir: 0 });
 
     setTimeout(() => {
+        const currentState = pauseTokens.get(limiter);
+        if (!currentState || currentState.currentToken !== token) {
+            return;
+        }
+
+        currentState.currentToken = null;
         const isYoutube = limiter === youtubeRateLimiter;
         const maxRequests = isYoutube
             ? config.youtube.maxRequestsPerMinute

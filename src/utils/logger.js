@@ -17,12 +17,24 @@ const currentLevel = LOG_LEVELS[config.logging.level] || LOG_LEVELS.info;
 /**
  * Format a log message with timestamp and level
  */
+function safeStringify(obj) {
+    try {
+        return JSON.stringify(obj);
+    } catch {
+        try {
+            return JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+        } catch {
+            return String(obj);
+        }
+    }
+}
+
 function formatMessage(level, component, message, data = null) {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level.toUpperCase().padEnd(5)}] [${component}]`;
 
     if (data) {
-        return `${prefix} ${message} ${JSON.stringify(data)}`;
+        return `${prefix} ${message} ${safeStringify(data)}`;
     }
     return `${prefix} ${message}`;
 }

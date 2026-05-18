@@ -15,7 +15,7 @@ import config from '../config/index.js';
 import { createLogger } from '../utils/logger.js';
 import { getUsers, getStreams, parseStreamData } from './twitch.js';
 import { getUserAccessToken, hasToken } from './twitchUserToken.js';
-import { creators, streamState } from '../database/queries.js';
+import { creators } from '../database/queries.js';
 
 const logger = createLogger('TwitchEventSub');
 
@@ -34,6 +34,9 @@ let userIdMap = new Map(); // login (lowercase) -> twitch user_id
 
 // Callback for processing stream events
 let onStreamOnline = null;
+
+// Reconnect guard for safely closing old WebSocket after reconnect
+let activeReconnectGuard = null;
 
 /**
  * Initialize the EventSub WebSocket service
@@ -125,6 +128,7 @@ function connect(url = EVENTSUB_WS_URL) {
         clearKeepaliveTimeout();
         sessionId = null;
         activeSubscriptions.clear();
+        activeReconnectGuard = null;
 
         // 4003 = connection unused (no subscriptions created) — don't reconnect
         if (!isShuttingDown && code !== 4003) {
@@ -175,6 +179,12 @@ async function handleMessage(message) {
  * Handle welcome message — subscribe to events
  */
 async function handleWelcome(message) {
+    // If we have a reconnect guard and this is a new session, close the old connection
+    if (activeReconnectGuard && !activeReconnectGuard.closed) {
+        activeReconnectGuard.closed = true;
+        activeReconnectGuard = null;
+    }
+
     sessionId = message.payload.session.id;
     keepaliveTimeoutSeconds = message.payload.session.keepalive_timeout_seconds || 10;
 
@@ -246,16 +256,25 @@ function handleReconnect(message) {
     const reconnectUrl = message.payload.session.reconnect_url;
     logger.info(`EventSub: Reconnecting to ${reconnectUrl}`);
 
-    // Connect to new URL before closing old connection
     const oldWs = ws;
+
+    // Set a flag so the new connection's welcome handler closes the old one
+    const reconnectGuard = { closed: false };
+    const oldSessionId = sessionId;
+
+    // Store the guard on the module scope for handleWelcome to use
+    activeReconnectGuard = reconnectGuard;
+
     connect(reconnectUrl);
 
-    // Close old connection after new one is established
+    // Safety timeout: close old connection after 15s regardless
     setTimeout(() => {
-        if (oldWs && oldWs.readyState === WebSocket.OPEN) {
+        if (!reconnectGuard.closed && oldWs && oldWs.readyState === WebSocket.OPEN) {
+            logger.warn('EventSub reconnect did not complete in time, closing old connection');
             oldWs.close();
+            reconnectGuard.closed = true;
         }
-    }, 5000);
+    }, 15000);
 }
 
 /**

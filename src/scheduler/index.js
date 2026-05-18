@@ -45,6 +45,10 @@ let stats = {
     apiErrors: 0,
 };
 
+// Mutexes to prevent overlapping polls
+let youtubePolling = false;
+let twitchPolling = false;
+
 /**
  * Check if a creator should be polled (respects cooldown)
  */
@@ -64,6 +68,12 @@ async function shouldPollCreator(platform, externalId) {
  */
 async function pollYouTube() {
     if (!isRunning) return;
+    if (youtubePolling) {
+        logger.debug('YouTube poll already in progress, skipping');
+        return;
+    }
+
+    youtubePolling = true;
 
     try {
         const youtubeCreators = await creators.getAllByPlatform('youtube');
@@ -100,6 +110,8 @@ async function pollYouTube() {
     } catch (error) {
         logger.error('YouTube polling error', { error: error.message });
         stats.apiErrors++;
+    } finally {
+        youtubePolling = false;
     }
 }
 
@@ -108,6 +120,12 @@ async function pollYouTube() {
  */
 async function pollTwitch() {
     if (!isRunning) return;
+    if (twitchPolling) {
+        logger.debug('Twitch poll already in progress, skipping');
+        return;
+    }
+
+    twitchPolling = true;
 
     try {
         const twitchCreators = await creators.getAllByPlatform('twitch');
@@ -174,6 +192,8 @@ async function pollTwitch() {
     } catch (error) {
         logger.error('Twitch polling error', { error: error.message });
         stats.apiErrors++;
+    } finally {
+        twitchPolling = false;
     }
 }
 

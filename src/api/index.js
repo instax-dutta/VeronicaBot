@@ -62,6 +62,41 @@ export async function startApiServer() {
         next();
     });
 
+    // Simple in-memory rate limiter for API endpoints
+    const ipRequests = new Map();
+    app.use((req, res, next) => {
+        const ip = req.ip || req.connection.remoteAddress;
+        const now = Date.now();
+        const windowMs = 10000;
+        const maxRequests = 30;
+
+        if (!ipRequests.has(ip)) {
+            ipRequests.set(ip, []);
+        }
+
+        const timestamps = ipRequests.get(ip).filter(t => now - t < windowMs);
+        if (timestamps.length >= maxRequests) {
+            return res.status(429).json({ error: 'Too many requests, please slow down' });
+        }
+
+        timestamps.push(now);
+        ipRequests.set(ip, timestamps);
+        next();
+    });
+
+    // Periodic cleanup of stale IP entries
+    setInterval(() => {
+        const now = Date.now();
+        for (const [ip, timestamps] of ipRequests.entries()) {
+            const valid = timestamps.filter(t => now - t < 10000);
+            if (valid.length === 0) {
+                ipRequests.delete(ip);
+            } else {
+                ipRequests.set(ip, valid);
+            }
+        }
+    }, 60000).unref();
+
     // ─── Public Routes ───────────────────────────────────
 
     /**

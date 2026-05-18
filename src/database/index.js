@@ -12,6 +12,8 @@ const logger = createLogger('Database');
 
 let db = null;
 const statementCache = new Map();
+const MAX_CACHED_STATEMENTS = 100;
+let walCheckpointIntervalId = null;
 
 export function initDatabase() {
     if (db) {
@@ -35,6 +37,15 @@ export function initDatabase() {
 
         runMigrations();
 
+        // Periodic WAL checkpoint every hour to prevent unbounded WAL growth
+        walCheckpointIntervalId = setInterval(() => {
+            try {
+                db.pragma('wal_checkpoint(TRUNCATE)');
+            } catch (e) {
+                // Non-critical
+            }
+        }, 3600000).unref();
+
         logger.info('✅ Connected to SQLite database');
         return db;
     } catch (error) {
@@ -53,6 +64,10 @@ export function getDb() {
 function getPreparedStatement(text) {
     const cacheKey = text;
     if (!statementCache.has(cacheKey)) {
+        if (statementCache.size >= MAX_CACHED_STATEMENTS) {
+            const firstKey = statementCache.keys().next().value;
+            statementCache.delete(firstKey);
+        }
         const stmt = db.prepare(text);
         statementCache.set(cacheKey, stmt);
     }
@@ -89,9 +104,15 @@ export function transaction(callback) {
     return database.transaction(callback)();
 }
 
+const ALLOWED_TABLES = new Set(['creators', 'stream_state', 'routing', 'notification_log']);
+
 export function batchInsert(table, columns, rows) {
     if (!rows || rows.length === 0) {
         return { rowCount: 0, rows: [] };
+    }
+
+    if (!ALLOWED_TABLES.has(table)) {
+        throw new Error(`Invalid table name: ${table}`);
     }
 
     const database = getDb();
@@ -197,6 +218,16 @@ function createIndexes() {
 export function closeDatabase() {
     if (db) {
         logger.info('Closing database connection...');
+        if (walCheckpointIntervalId) {
+            clearInterval(walCheckpointIntervalId);
+            walCheckpointIntervalId = null;
+        }
+        // Final WAL checkpoint before closing
+        try {
+            db.pragma('wal_checkpoint(TRUNCATE)');
+        } catch (e) {
+            // Non-critical
+        }
         statementCache.clear();
         db.close();
         db = null;

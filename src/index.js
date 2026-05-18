@@ -203,7 +203,9 @@ async function main() {
         await initClient();
 
         // Warm cache from database (optional, non-blocking)
-        warmCacheFromDB().catch(() => { });
+        warmCacheFromDB().catch(err => {
+            logger.debug('Cache warmup failed (non-critical)', { error: err.message });
+        });
 
         // Start the scheduler
         startScheduler();

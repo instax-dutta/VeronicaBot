@@ -24,8 +24,11 @@ function validateEnv() {
     'YOUTUBE_API_KEY',
     'TWITCH_CLIENT_ID',
     'TWITCH_CLIENT_SECRET',
+  ];
+
+  const optional = [
     'UPSTASH_REDIS_REST_URL',
-    'UPSTASH_REDIS_REST_TOKEN'
+    'UPSTASH_REDIS_REST_TOKEN',
   ];
 
   const missing = required.filter(key => !process.env[key]);
@@ -35,6 +38,13 @@ function validateEnv() {
     missing.forEach(key => console.error(`   - ${key}`));
     console.error('\n📝 Copy .env.example to .env and fill in your API keys.');
     process.exit(1);
+  }
+
+  const missingRedis = optional.filter(key => !process.env[key]);
+  if (missingRedis.length === 2) {
+    console.warn('⚠️  Upstash Redis not configured. Bot will run without caching (SQLite only).');
+  } else if (missingRedis.length === 1) {
+    console.warn('⚠️  Incomplete Redis configuration. Both UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are needed.');
   }
 }
 
@@ -113,6 +123,17 @@ export const config = {
     dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
     discordClientSecret: process.env.DISCORD_CLIENT_SECRET || '',
   },
+  // Validate API secret in production
+  _validateApiSecret() {
+    if (process.env.NODE_ENV === 'production' && this.api.secret === 'change-me-in-production') {
+      console.error('❌ API_SECRET is set to default value in production!');
+      console.error('   Generate a secure secret: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+      process.exit(1);
+    }
+  },
 };
+
+// Run production validations
+config._validateApiSecret();
 
 export default config;

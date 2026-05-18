@@ -5,10 +5,13 @@
 
 import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
 import config from '../config/index.js';
+import { createLogger } from '../utils/logger.js';
 import { creators, streamState, routing } from '../database/queries.js';
 import twitchService from '../services/twitch.js';
 import youtubeService from '../services/youtube.js';
 import twitchEventSub from '../services/twitchEventSub.js';
+
+const logger = createLogger('Commands:Add');
 
 export const data = new SlashCommandBuilder()
     .setName('add')
@@ -127,23 +130,19 @@ export async function execute(interaction) {
             }
 
             // Verify user exists on Twitch
+            let twitchUsers = [];
             try {
-                const users = await twitchService.getUsers([usernameInput]);
+                twitchUsers = await twitchService.getUsers([usernameInput]);
 
-                if (users.length === 0) {
+                if (twitchUsers.length === 0) {
                     return interaction.editReply({
                         content: `❌ Twitch user **${usernameInput}** not found. Please check the spelling.`,
                     });
                 }
 
                 // Use the data from Twitch to ensure accuracy
-                const twitchUser = users[0];
-                externalId = twitchUser.login; // Ensure we use the login name as ID
-
-                // If the user didn't provide a custom display name, we could use the one from Twitch,
-                // but for now we respect the input option or fallback (though the option is required).
-                // We'll update the display name in the success message to match what we save if we wanted,
-                // but let's stick to the prompt's `displayName` for the DB entry.
+                const twitchUser = twitchUsers[0];
+                externalId = twitchUser.login;
 
             } catch (error) {
                 return interaction.editReply({
@@ -152,8 +151,14 @@ export async function execute(interaction) {
             }
         }
 
-        // Add creator to database (async)
-        const creatorId = await creators.upsert(platform, externalId, displayName, interaction.options.getString('username') && subcommand === 'twitch' ? (await twitchService.getUsers([interaction.options.getString('username').toLowerCase()]))[0]?.profile_image_url : null);
+        // Determine icon URL for this creator (avoid redundant API calls)
+        let iconUrl = null;
+        if (subcommand === 'twitch' && twitchUsers.length > 0 && twitchUsers[0].profile_image_url) {
+            iconUrl = twitchUsers[0].profile_image_url;
+        }
+
+        // Add creator to database
+        const creatorId = await creators.upsert(platform, externalId, displayName, iconUrl);
 
         // Ensure stream state exists
         await streamState.ensureExists(creatorId);
@@ -169,8 +174,7 @@ export async function execute(interaction) {
         // If Twitch creator, subscribe to EventSub dynamically (no restart needed)
         if (platform === 'twitch') {
             twitchEventSub.subscribeCreator(externalId, displayName).catch(err => {
-                // Non-blocking — polling will still work as fallback
-                logger.debug?.(`EventSub subscribe failed for ${displayName}: ${err.message}`);
+                logger.debug(`EventSub subscribe failed for ${displayName}: ${err.message}`);
             });
         }
 
@@ -205,16 +209,8 @@ export async function execute(interaction) {
             });
         }
 
-        // Add thumbnail if we found one
-        if (subcommand === 'twitch') {
-            try {
-                const users = await twitchService.getUsers([interaction.options.getString('username').toLowerCase()]);
-                if (users.length > 0 && users[0].profile_image_url) {
-                    embed.setThumbnail(users[0].profile_image_url);
-                }
-            } catch (e) {
-                // ignore err
-            }
+        if (iconUrl) {
+            embed.setThumbnail(iconUrl);
         }
 
         embed.setTimestamp().setFooter({ text: 'Veronica • Made for Avengers Streamers' });

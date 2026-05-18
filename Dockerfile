@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:22-slim
 
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -24,6 +24,4 @@ ENV PORT=3001
 
 EXPOSE 3001
 
-WORKDIR /app
-
-CMD ["node", "--experimental-specifier-resolution=node", "src/index.js"]
+CMD ["node", "src/index.js"]

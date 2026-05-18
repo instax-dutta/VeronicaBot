@@ -36,7 +36,15 @@ export function loadToken() {
             return false;
         }
 
-        const data = JSON.parse(readFileSync(TOKEN_FILE, 'utf8'));
+        const raw = readFileSync(TOKEN_FILE, 'utf8');
+        let data;
+        try {
+            data = JSON.parse(raw);
+        } catch {
+            logger.warn('Token file is corrupted, ignoring');
+            return false;
+        }
+
         userAccessToken = data.access_token;
         refreshToken = data.refresh_token;
         tokenExpiresAt = data.expires_at;

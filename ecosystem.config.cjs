@@ -7,11 +7,11 @@
 module.exports = {
     apps: [
         {
-            name: 'notifoty',
+            name: 'veronicabot',
             script: './src/index.js',
 
-            // Environment
-            node_args: '--experimental-modules',
+            // Environment (ES modules are native in Node 18+)
+            node_args: '',
 
             // Instances and cluster mode
             instances: 1, // Single instance - bot state must not be duplicated
